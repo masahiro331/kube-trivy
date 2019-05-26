@@ -1,0 +1,14 @@
+[Trivy]
+format = "table"
+serverity = "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+cacheDir = "cache-dir"
+exitCode = 0
+skipUpdate = true
+onlyUpdate = false
+reset = false
+clearCache = false
+quiet = false
+ignoreUnfixed = false
+refresh = false
+autoRefresh = false
+debug = true
