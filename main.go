@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"time"
 
+	c "github.com/knqyf263/kube-trivy/pkg/config"
 	"github.com/knqyf263/kube-trivy/pkg/signals"
 	"github.com/knqyf263/kube-trivy/pkg/trivy"
-	"github.com/knqyf263/trivy/pkg/log"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -17,6 +17,7 @@ import (
 
 func main() {
 	var kubeconfig *string
+
 	if home := homeDir(); home != "" {
 		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
 	} else {
@@ -24,8 +25,9 @@ func main() {
 	}
 
 	flag.Parse()
-	debug := true
-	if err := log.InitLogger(debug); err != nil {
+
+	conf, err := c.Load("./config.toml")
+	if err != nil {
 		l.Fatal(err)
 	}
 
@@ -45,7 +47,7 @@ func main() {
 	controller := NewController(clientset, informerFactory.Apps().V1().Deployments())
 	informerFactory.Start(stopCh)
 
-	if err = trivy.Init(); err != nil {
+	if err = trivy.Init(conf.Trivy); err != nil {
 		l.Fatalf("Error init trivy: %s", err.Error())
 	}
 	if err = controller.Run(1, stopCh); err != nil {

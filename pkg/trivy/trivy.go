@@ -5,6 +5,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/knqyf263/fanal/cache"
+	"github.com/knqyf263/kube-trivy/pkg/config"
 	"github.com/knqyf263/trivy/pkg/db"
 	"github.com/knqyf263/trivy/pkg/log"
 	"github.com/knqyf263/trivy/pkg/report"
@@ -15,12 +17,41 @@ import (
 	"golang.org/x/xerrors"
 )
 
-func Init() error {
-	cacheDir := "cache-dir"
-	if cacheDir != "" {
-		utils.SetCacheDir(cacheDir)
+var Conf config.TrivyConf
+
+func Init(conf config.TrivyConf) error {
+	Conf = conf
+
+	utils.Quiet = Conf.Quiet
+	if Conf.CacheDir != "" {
+		utils.SetCacheDir(Conf.CacheDir)
+	}
+	if err := log.InitLogger(Conf.Debug); err != nil {
+		l.Fatal(err)
 	}
 	log.Logger.Debugf("cache dir:  %s", utils.CacheDir())
+
+	if Conf.Reset {
+		log.Logger.Info("Resetting...")
+		if err := cache.Clear(); err != nil {
+			return xerrors.New("failed to remove image layer cache")
+		}
+		if err := os.RemoveAll(utils.CacheDir()); err != nil {
+			return xerrors.New("failed to remove cache")
+		}
+		return nil
+	}
+
+	if Conf.ClearCache {
+		log.Logger.Info("Removing image caches...")
+		if err := cache.Clear(); err != nil {
+			return xerrors.New("failed to remove image layer cache")
+		}
+	}
+
+	if (Conf.Refresh || Conf.AutoRefresh) && Conf.SkipUpdate {
+		return xerrors.New("The --skip-update option can not be specified with the --refresh or --auto-refresh option")
+	}
 
 	if err := db.Init(); err != nil {
 		l.Fatalf("error in vulnerability DB initialize: %w", err)
@@ -29,6 +60,9 @@ func Init() error {
 }
 
 func Update() error {
+	if Conf.SkipUpdate {
+		return nil
+	}
 	if err := vulnsrc.Update(); err != nil {
 		l.Fatalf("error in vulnerability DB update: %w", err)
 	}
@@ -40,36 +74,33 @@ func ScanImage(imageName string) error {
 
 	var results report.Results
 	var severities []vulnerability.Severity
-	for _, s := range strings.Split(strings.Join(vulnerability.SeverityNames, ","), ",") {
+	for _, s := range strings.Split(Conf.Severity, ",") {
 		severity, err := vulnerability.NewSeverity(s)
 		if err != nil {
 			log.Logger.Infof("error in severity option: %s", err)
 		}
 		severities = append(severities, severity)
 	}
-	ignoreUnfixed := false
 	for path, vuln := range vulns {
 		results = append(results, report.Result{
 			FileName:        path,
-			Vulnerabilities: vulnerability.FillAndFilter(vuln, severities, ignoreUnfixed),
+			Vulnerabilities: vulnerability.FillAndFilter(vuln, severities, Conf.IgnoreUnfixed),
 		})
 	}
 
 	var writer report.Writer
-	output := os.Stdout
-	writer = &report.TableWriter{Output: output}
+	switch Conf.Format {
+	case "table":
+		writer = &report.TableWriter{Output: os.Stdout}
+	case "json":
+		writer = &report.JsonWriter{Output: os.Stdout}
+	default:
+		return xerrors.Errorf("unknown format: %v", Conf.Format)
+	}
 
 	if err = writer.Write(results); err != nil {
 		return xerrors.Errorf("failed to write results: %w", err)
 	}
 
-	exitCode := 0
-	if exitCode != 0 {
-		for _, result := range results {
-			if len(result.Vulnerabilities) > 0 {
-				os.Exit(exitCode)
-			}
-		}
-	}
 	return nil
 }
