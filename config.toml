@@ -12,3 +12,12 @@ ignoreUnfixed = false
 refresh = false
 autoRefresh = false
 debug = true
+
+[slack]
+hookURL     = ""
+legacyToken = ""
+channel     = ""
+iconEmoji   = ""
+authUser    = ""
+notifyUsers = [""]
+text        = ""

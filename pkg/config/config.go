@@ -11,6 +11,13 @@ type Config struct {
 }
 
 type SlackConf struct {
+	HookURL     string   `valid:"url" json:"-" toml:"hookURL,omitempty"`
+	LegacyToken string   `json:"-" toml:"legacyToken,omitempty"`
+	Channel     string   `json:"-" toml:"channel,omitempty"`
+	IconEmoji   string   `json:"-" toml:"iconEmoji,omitempty"`
+	AuthUser    string   `json:"-" toml:"authUser,omitempty"`
+	NotifyUsers []string `toml:"notifyUsers,omitempty" json:"-"`
+	Text        string   `json:"-"`
 }
 
 type TrivyConf struct {
@@ -26,6 +33,7 @@ type TrivyConf struct {
 	Refresh       bool   `toml:"refresh,omitempty"`
 	AutoRefresh   bool   `toml:"autoRefresh,omitempty"`
 	Debug         bool   `toml:"debug,omitempty"`
+	Slack         bool   `toml:"slack,omitempty"`
 }
 
 type FluentdConf struct {
