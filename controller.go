@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/knqyf263/kube-trivy/pkg/trivy"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -43,7 +44,7 @@ func NewController(clientset kubernetes.Interface, deploymentInformer informers.
 			if newDepl.ResourceVersion == oldDepl.ResourceVersion {
 				return
 			}
-			if newDepl.Metadata.Generation == oldDepl.Metadata.Generation {
+			if newDepl.ObjectMeta.Generation == oldDepl.ObjectMeta.Generation {
 				return
 			}
 			controller.handleObject(new)
@@ -164,7 +165,12 @@ func (c *Controller) syncHandler(key string) error {
 
 		return err
 	}
-	fmt.Print(deployment.Status)
+	for _, c := range deployment.Spec.Template.Spec.Containers {
+		if err := trivy.ScanImage(c.Image); err != nil {
+			klog.Infof("Error ScanImage '%w'", err)
+			return nil
+		}
+	}
 
 	return nil
 }

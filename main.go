@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/knqyf263/kube-trivy/pkg/signals"
+	"github.com/knqyf263/kube-trivy/pkg/trivy"
 	"github.com/knqyf263/trivy/pkg/log"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
@@ -44,6 +45,9 @@ func main() {
 	controller := NewController(clientset, informerFactory.Apps().V1().Deployments())
 	informerFactory.Start(stopCh)
 
+	if err = trivy.Init(); err != nil {
+		l.Fatalf("Error init trivy: %s", err.Error())
+	}
 	if err = controller.Run(1, stopCh); err != nil {
 		l.Fatalf("Error running controller: %s", err.Error())
 	}

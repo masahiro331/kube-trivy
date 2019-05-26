@@ -1,6 +1,7 @@
 package trivy
 
 import (
+	l "log"
 	"os"
 	"strings"
 
@@ -24,12 +25,14 @@ func Init() error {
 	if err := db.Init(); err != nil {
 		l.Fatalf("error in vulnerability DB initialize: %w", err)
 	}
+	return nil
 }
 
 func Update() error {
 	if err := vulnsrc.Update(); err != nil {
 		l.Fatalf("error in vulnerability DB update: %w", err)
 	}
+	return nil
 }
 
 func ScanImage(imageName string) error {
