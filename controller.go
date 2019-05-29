@@ -173,8 +173,6 @@ func (c *Controller) processNextWorkItem() bool {
 			return nil
 		}
 
-		fmt.Printf("----------------------\n%+v\n----------------------\n", obj)
-
 		if err := c.syncHandler(key); err != nil {
 			c.workqueue.AddRateLimited(key)
 			return fmt.Errorf("error syncing '%s': %s, requeuing", key, err.Error())
@@ -208,7 +206,7 @@ func (c *Controller) syncHandler(key string) error {
 
 			return err
 		}
-		// s.NotificationDeployment(daemonset)
+		s.NotificationResource(kind, name, namespace)
 		for _, c := range daemonset.Spec.Template.Spec.Containers {
 			results, err := trivy.ScanImage(c.Image)
 			if err != nil {
@@ -228,7 +226,7 @@ func (c *Controller) syncHandler(key string) error {
 
 			return err
 		}
-		s.NotificationDeployment(deployment)
+		s.NotificationResource(kind, name, namespace)
 		for _, c := range deployment.Spec.Template.Spec.Containers {
 			results, err := trivy.ScanImage(c.Image)
 			if err != nil {
@@ -240,5 +238,4 @@ func (c *Controller) syncHandler(key string) error {
 
 	}
 	return nil
-
 }

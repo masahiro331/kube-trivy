@@ -8,7 +8,6 @@ import (
 	"github.com/knqyf263/trivy/pkg/report"
 	"github.com/knqyf263/trivy/pkg/vulnsrc/vulnerability"
 	"github.com/nlopes/slack"
-	appsv1 "k8s.io/api/apps/v1"
 )
 
 const (
@@ -42,9 +41,10 @@ func Init(conf config.SlackConf) {
 	Conf = conf
 }
 
-func (w SlackWriter) NotificationDeployment(deployment *appsv1.Deployment) (err error) {
+func (w SlackWriter) NotificationResource(kind, name, namespace string) (err error) {
 	api := slack.New(Conf.Token)
-	str := fmt.Sprintf(`*Deployment: %s (%s)*`, deployment.ObjectMeta.Name, deployment.ObjectMeta.Namespace)
+
+	str := fmt.Sprintf(`*%s: %s (%s)*`, kind, name, namespace)
 
 	_, _, err = api.PostMessage(
 		Conf.Channel,
