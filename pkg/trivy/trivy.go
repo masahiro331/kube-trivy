@@ -7,7 +7,6 @@ import (
 
 	"github.com/knqyf263/fanal/cache"
 	"github.com/knqyf263/kube-trivy/pkg/config"
-	"github.com/knqyf263/kube-trivy/pkg/integration/slack"
 	"github.com/knqyf263/trivy/pkg/db"
 	"github.com/knqyf263/trivy/pkg/log"
 	"github.com/knqyf263/trivy/pkg/report"
@@ -70,7 +69,7 @@ func Update() error {
 	return nil
 }
 
-func ScanImage(imageName string) error {
+func ScanImage(imageName string) (*report.Results, error) {
 	vulns, err := scanner.ScanImage(imageName, "")
 
 	var results report.Results
@@ -89,8 +88,6 @@ func ScanImage(imageName string) error {
 		})
 	}
 
-	s := slack.SlackWriter{}
-	s.Write(results)
 	var writer report.Writer
 	switch Conf.Format {
 	case "table":
@@ -98,12 +95,12 @@ func ScanImage(imageName string) error {
 	case "json":
 		writer = &report.JsonWriter{Output: os.Stdout}
 	default:
-		return xerrors.Errorf("unknown format: %v", Conf.Format)
+		return nil, xerrors.Errorf("unknown format: %v", Conf.Format)
 	}
 
 	if err = writer.Write(results); err != nil {
-		return xerrors.Errorf("failed to write results: %w", err)
+		return nil, xerrors.Errorf("failed to write results: %w", err)
 	}
 
-	return nil
+	return &results, nil
 }

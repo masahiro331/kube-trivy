@@ -47,7 +47,7 @@ func main() {
 	stopCh := signals.SetupSignalHandler()
 	informerFactory := informers.NewSharedInformerFactory(clientset, time.Second*5)
 
-	controller := NewController(clientset, informerFactory.Apps().V1().Deployments())
+	controller := NewController(clientset, informerFactory.Apps().V1().Deployments(), informerFactory.Apps().V1().DaemonSets())
 	informerFactory.Start(stopCh)
 
 	if err = trivy.Init(conf.Trivy); err != nil {
