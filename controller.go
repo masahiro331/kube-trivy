@@ -8,6 +8,7 @@ import (
 
 	"github.com/knqyf263/kube-trivy/pkg/integration/slack"
 	"github.com/knqyf263/kube-trivy/pkg/trivy"
+	"golang.org/x/xerrors"
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -19,7 +20,6 @@ import (
 	listers "k8s.io/client-go/listers/apps/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
-	"k8s.io/klog"
 )
 
 type Controller struct {
@@ -77,24 +77,16 @@ func NewController(clientset kubernetes.Interface, deploymentInformer informers.
 func (c *Controller) Run(threadiness int, stopCh <-chan struct{}) error {
 	defer utilruntime.HandleCrash()
 	defer c.workqueue.ShutDown()
-	fmt.Print("Run worker\n")
 
-	klog.Info("Starting Foo controller")
-
-	klog.Info("Waiting for informer caches to sync")
 	if ok := cache.WaitForCacheSync(stopCh, c.deploymentsSynced); !ok {
-		return fmt.Errorf("failed to wait for caches to sync")
+		return xerrors.New("failed to wait for caches to sync")
 	}
 
-	klog.Info("Starting workers")
 	for i := 0; i < threadiness; i++ {
 		go wait.Until(c.runWorker, time.Second, stopCh)
 	}
 
-	klog.Info("Started workers")
 	<-stopCh
-	klog.Info("Shutting down workers")
-
 	return nil
 }
 
@@ -117,16 +109,14 @@ func (c *Controller) handleObject(obj interface{}) {
 			utilruntime.HandleError(fmt.Errorf("error decoding object tombstone, invalid type"))
 			return
 		}
-		klog.V(4).Infof("Recovered deleted object '%s' from tombstone", object.GetName())
 	}
-	klog.V(4).Infof("Processing object: %s", object.GetName())
 	c.enqueue(object)
 }
 
 func MetaNamespaceKeyFunc(obj interface{}) (string, error) {
 	key, err := cache.MetaNamespaceKeyFunc(obj)
 	if err != nil {
-		return "", err
+		return "", xerrors.Errorf("failed to MetaNamespaceKeyFunc: %v", err)
 	}
 	return getType(obj)[1:] + "/" + key, nil
 }
@@ -175,11 +165,10 @@ func (c *Controller) processNextWorkItem() bool {
 
 		if err := c.syncHandler(key); err != nil {
 			c.workqueue.AddRateLimited(key)
-			return fmt.Errorf("error syncing '%s': %s, requeuing", key, err.Error())
+			return xerrors.Errorf("failed to error syncing: %s", err)
 		}
 
 		c.workqueue.Forget(obj)
-		klog.Infof("Successfully synced '%s'", key)
 		return nil
 	}(obj)
 
@@ -210,8 +199,7 @@ func (c *Controller) syncHandler(key string) error {
 		for _, c := range daemonset.Spec.Template.Spec.Containers {
 			results, err := trivy.ScanImage(c.Image)
 			if err != nil {
-				klog.Infof("Error ScanImage '%w'", err)
-				return nil
+				return xerrors.Errorf("failed to scanImage: %s", err)
 			}
 			s.NotificationAddOrModifyContainer(*results)
 		}
@@ -230,8 +218,7 @@ func (c *Controller) syncHandler(key string) error {
 		for _, c := range deployment.Spec.Template.Spec.Containers {
 			results, err := trivy.ScanImage(c.Image)
 			if err != nil {
-				klog.Infof("Error ScanImage '%w'", err)
-				return nil
+				return xerrors.Errorf("failed to scanImage: %s", err)
 			}
 			s.NotificationAddOrModifyContainer(*results)
 		}
