@@ -7,6 +7,7 @@ import (
 
 	"github.com/knqyf263/fanal/cache"
 	"github.com/knqyf263/kube-trivy/pkg/config"
+	"github.com/knqyf263/kube-trivy/pkg/integration/slack"
 	"github.com/knqyf263/trivy/pkg/db"
 	"github.com/knqyf263/trivy/pkg/log"
 	"github.com/knqyf263/trivy/pkg/report"
@@ -88,6 +89,8 @@ func ScanImage(imageName string) error {
 		})
 	}
 
+	s := slack.SlackWriter{}
+	s.Write(results)
 	var writer report.Writer
 	switch Conf.Format {
 	case "table":

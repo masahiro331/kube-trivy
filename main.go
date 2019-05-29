@@ -8,6 +8,7 @@ import (
 	"time"
 
 	c "github.com/knqyf263/kube-trivy/pkg/config"
+	"github.com/knqyf263/kube-trivy/pkg/integration/slack"
 	"github.com/knqyf263/kube-trivy/pkg/signals"
 	"github.com/knqyf263/kube-trivy/pkg/trivy"
 	"k8s.io/client-go/informers"
@@ -16,6 +17,7 @@ import (
 )
 
 func main() {
+
 	var kubeconfig *string
 
 	if home := homeDir(); home != "" {
@@ -30,6 +32,7 @@ func main() {
 	if err != nil {
 		l.Fatal(err)
 	}
+	slack.Init(conf.Slack)
 
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {

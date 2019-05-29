@@ -12,7 +12,7 @@ type Config struct {
 
 type SlackConf struct {
 	HookURL     string   `valid:"url" json:"-" toml:"hookURL,omitempty"`
-	LegacyToken string   `json:"-" toml:"legacyToken,omitempty"`
+	Token       string   `json:"-" toml:"token,omitempty"`
 	Channel     string   `json:"-" toml:"channel,omitempty"`
 	IconEmoji   string   `json:"-" toml:"iconEmoji,omitempty"`
 	AuthUser    string   `json:"-" toml:"authUser,omitempty"`

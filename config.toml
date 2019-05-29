@@ -15,9 +15,9 @@ debug = true
 
 [slack]
 hookURL     = ""
-legacyToken = ""
+token	    = ""
 channel     = ""
-iconEmoji   = ""
+iconEmoji   = ":D"
 authUser    = ""
 notifyUsers = [""]
-text        = ""
+text        = "Test message"
