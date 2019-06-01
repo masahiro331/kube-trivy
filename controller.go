@@ -199,7 +199,15 @@ func (c *Controller) syncHandler(key string) error {
 		for _, c := range daemonset.Spec.Template.Spec.Containers {
 			results, err := trivy.ScanImage(c.Image)
 			if err != nil {
-				return xerrors.Errorf("failed to scanImage: %s", err)
+				return xerrors.Errorf("failed to scanImage: %w", err)
+			}
+			err = trivy.SaveScanResult(key, *results)
+			if err != nil {
+				return xerrors.Errorf("failed to save scanResult: %w", err)
+			}
+			*results, err = trivy.CompareResults(key, *results)
+			if err != nil {
+				return xerrors.Errorf("failed to compare scanResult: %w", err)
 			}
 			s.NotificationAddOrModifyContainer(*results)
 		}
@@ -218,8 +226,17 @@ func (c *Controller) syncHandler(key string) error {
 		for _, c := range deployment.Spec.Template.Spec.Containers {
 			results, err := trivy.ScanImage(c.Image)
 			if err != nil {
-				return xerrors.Errorf("failed to scanImage: %s", err)
+				return xerrors.Errorf("failed to scanImage: %w", err)
 			}
+			err = trivy.SaveScanResult(key, *results)
+			if err != nil {
+				return xerrors.Errorf("failed to save scanResult: %w", err)
+			}
+			*results, err = trivy.CompareResults(key, *results)
+			if err != nil {
+				return xerrors.Errorf("failed to compare scanResult: %w", err)
+			}
+			fmt.Printf("%+v\n", results)
 			s.NotificationAddOrModifyContainer(*results)
 		}
 
