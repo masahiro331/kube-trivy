@@ -1,3 +1,7 @@
+[KubeTrivy]
+localMode = true
+configPath = ""
+
 [Trivy]
 format = "table"
 serverity = "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
@@ -17,7 +21,5 @@ debug = true
 hookURL     = ""
 token	    = ""
 channel     = ""
-iconEmoji   = ":D"
 authUser    = ""
 notifyUsers = [""]
-text        = "Test message"

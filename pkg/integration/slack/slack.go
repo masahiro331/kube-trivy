@@ -24,14 +24,6 @@ type field struct {
 	Short bool   `json:"short"`
 }
 
-type message struct {
-	Text        string             `json:"text"`
-	Username    string             `json:"username"`
-	IconEmoji   string             `json:"icon_emoji"`
-	Channel     string             `json:"channel"`
-	Attachments []slack.Attachment `json:"attachments"`
-}
-
 type SlackWriter struct {
 }
 

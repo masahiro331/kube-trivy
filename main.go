@@ -1,32 +1,24 @@
 package main
 
 import (
-	"flag"
 	l "log"
 	"os"
 	"path/filepath"
 	"time"
 
+	"github.com/knqyf263/kube-trivy/pkg/config"
 	c "github.com/knqyf263/kube-trivy/pkg/config"
 	"github.com/knqyf263/kube-trivy/pkg/integration/slack"
 	"github.com/knqyf263/kube-trivy/pkg/signals"
 	"github.com/knqyf263/kube-trivy/pkg/trivy"
+	"golang.org/x/xerrors"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
 func main() {
-
-	var kubeconfig *string
-
-	if home := homeDir(); home != "" {
-		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-	} else {
-		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
-	}
-
-	flag.Parse()
 
 	conf, err := c.Load("./config.toml")
 	if err != nil {
@@ -34,7 +26,7 @@ func main() {
 	}
 	slack.Init(conf.Slack)
 
-	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	config, err := getConfig(conf.KubeTrivy)
 	if err != nil {
 		l.Fatal(err.Error())
 	}
@@ -65,19 +57,34 @@ func homeDir() string {
 	return os.Getenv("USERPROFILE")
 }
 
-func GetConfig(context string, kubeconfig string) clientcmd.ClientConfig {
-	rules := clientcmd.NewDefaultClientConfigLoadingRules()
-	rules.DefaultClientConfig = &clientcmd.DefaultClientConfig
+func getConfig(conf config.KubeTrivyConf) (*rest.Config, error) {
+	if conf.LocalMode {
+		config, err := getOutClusterConfig(conf.ConfigPath)
+		return config, err
+	}
+	config, err := getInClusterConfig()
+	return config, err
+}
 
-	overrides := &clientcmd.ConfigOverrides{ClusterDefaults: clientcmd.ClusterDefaults}
+func getInClusterConfig() (*rest.Config, error) {
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		return nil, xerrors.Wrap(err, "")
+	}
+	return config, nil
+}
 
-	if context != "" {
-		overrides.CurrentContext = context
+func getOutClusterConfig(configPath string) (*rest.Config, error) {
+	if configPath == "" {
+		if home := homeDir(); home != "" {
+			configPath = filepath.Join(home, ".kube", "config")
+		}
 	}
 
-	if kubeconfig != "" {
-		rules.ExplicitPath = kubeconfig
+	config, err := clientcmd.BuildConfigFromFlags("", configPath)
+	if err != nil {
+		return nil, err
 	}
 
-	return clientcmd.NewNonInteractiveDeferredLoadingClientConfig(rules, overrides)
+	return config, nil
 }

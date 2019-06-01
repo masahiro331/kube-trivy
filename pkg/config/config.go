@@ -5,19 +5,23 @@ import (
 )
 
 type Config struct {
-	Slack   SlackConf
-	Trivy   TrivyConf
-	Fluentd FluentdConf
+	KubeTrivy KubeTrivyConf
+	Slack     SlackConf
+	Trivy     TrivyConf
+	Fluentd   FluentdConf
+}
+
+type KubeTrivyConf struct {
+	LocalMode  bool   `toml:"localMode,omitempty"`
+	ConfigPath string `toml:"configPath,omitempty"`
 }
 
 type SlackConf struct {
-	HookURL     string   `valid:"url" json:"-" toml:"hookURL,omitempty"`
-	Token       string   `json:"-" toml:"token,omitempty"`
-	Channel     string   `json:"-" toml:"channel,omitempty"`
-	IconEmoji   string   `json:"-" toml:"iconEmoji,omitempty"`
-	AuthUser    string   `json:"-" toml:"authUser,omitempty"`
-	NotifyUsers []string `toml:"notifyUsers,omitempty" json:"-"`
-	Text        string   `json:"-"`
+	HookURL     string   `toml:"hookURL,omitempty"`
+	Token       string   `toml:"token,omitempty"`
+	Channel     string   `toml:"channel,omitempty"`
+	AuthUser    string   `toml:"authUser,omitempty"`
+	NotifyUsers []string `toml:"notifyUsers,omitempty"`
 }
 
 type TrivyConf struct {

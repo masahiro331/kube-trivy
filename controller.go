@@ -236,7 +236,6 @@ func (c *Controller) syncHandler(key string) error {
 			if err != nil {
 				return xerrors.Errorf("failed to compare scanResult: %w", err)
 			}
-			fmt.Printf("%+v\n", results)
 			s.NotificationAddOrModifyContainer(*results)
 		}
 
