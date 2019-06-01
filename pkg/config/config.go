@@ -12,8 +12,9 @@ type Config struct {
 }
 
 type KubeTrivyConf struct {
-	LocalMode  bool   `toml:"localMode,omitempty"`
-	ConfigPath string `toml:"configPath,omitempty"`
+	IgnoreNotified bool   `toml:"ignoreNotified,omitempty"`
+	LocalMode      bool   `toml:"localMode,omitempty"`
+	ConfigPath     string `toml:"configPath,omitempty"`
 }
 
 type SlackConf struct {

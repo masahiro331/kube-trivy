@@ -11,22 +11,22 @@ import (
 	"github.com/knqyf263/kube-trivy/pkg/integration/slack"
 	"github.com/knqyf263/kube-trivy/pkg/signals"
 	"github.com/knqyf263/kube-trivy/pkg/trivy"
-	"golang.org/x/xerrors"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-func main() {
+var kubeTrivyConf config.KubeTrivyConf
 
+func main() {
 	conf, err := c.Load("./config.toml")
 	if err != nil {
 		l.Fatal(err)
 	}
 	slack.Init(conf.Slack)
-
-	config, err := getConfig(conf.KubeTrivy)
+	kubeTrivyConf = conf.KubeTrivy
+	config, err := getConfig(kubeTrivyConf)
 	if err != nil {
 		l.Fatal(err.Error())
 	}
@@ -69,7 +69,7 @@ func getConfig(conf config.KubeTrivyConf) (*rest.Config, error) {
 func getInClusterConfig() (*rest.Config, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		return nil, xerrors.Wrap(err, "")
+		return nil, err
 	}
 	return config, nil
 }

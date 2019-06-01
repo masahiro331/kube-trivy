@@ -201,13 +201,16 @@ func (c *Controller) syncHandler(key string) error {
 			if err != nil {
 				return xerrors.Errorf("failed to scanImage: %w", err)
 			}
+
 			err = trivy.SaveScanResult(key, *results)
 			if err != nil {
 				return xerrors.Errorf("failed to save scanResult: %w", err)
 			}
-			*results, err = trivy.CompareResults(key, *results)
-			if err != nil {
-				return xerrors.Errorf("failed to compare scanResult: %w", err)
+			if kubeTrivyConf.IgnoreNotified {
+				*results, err = trivy.CompareResults(key, *results)
+				if err != nil {
+					return xerrors.Errorf("failed to compare scanResult: %w", err)
+				}
 			}
 			s.NotificationAddOrModifyContainer(*results)
 		}
@@ -232,9 +235,11 @@ func (c *Controller) syncHandler(key string) error {
 			if err != nil {
 				return xerrors.Errorf("failed to save scanResult: %w", err)
 			}
-			*results, err = trivy.CompareResults(key, *results)
-			if err != nil {
-				return xerrors.Errorf("failed to compare scanResult: %w", err)
+			if kubeTrivyConf.IgnoreNotified {
+				*results, err = trivy.CompareResults(key, *results)
+				if err != nil {
+					return xerrors.Errorf("failed to compare scanResult: %w", err)
+				}
 			}
 			s.NotificationAddOrModifyContainer(*results)
 		}
