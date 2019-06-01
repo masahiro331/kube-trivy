@@ -1,6 +1,7 @@
 package trivy
 
 import (
+	"fmt"
 	l "log"
 	"os"
 	"strings"
@@ -82,12 +83,14 @@ func ScanImage(imageName string) (*report.Results, error) {
 		severities = append(severities, severity)
 	}
 	for path, vuln := range vulns {
+		if !strings.Contains(path, imageName) {
+			path = fmt.Sprintf("%s:%s", imageName, path)
+		}
 		results = append(results, report.Result{
 			FileName:        path,
 			Vulnerabilities: vulnerability.FillAndFilter(vuln, severities, Conf.IgnoreUnfixed),
 		})
 	}
-
 	var writer report.Writer
 	switch Conf.Format {
 	case "table":
