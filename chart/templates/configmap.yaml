@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "kube-trivy.fullname" . }}
+  labels:
+    app: {{ template "kube-trivy.fullname" . }}
+    chart: '{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}'
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+data:
+  config.toml : |-
+    [KubeTrivy]
+    localMode = false
+    configPath = ""
+    ignoreNotified = true
+
+    [Trivy]
+    format = "table"
+    serverity = "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
+    cacheDir = "cache-dir"
+    exitCode = 0
+    skipUpdate = true
+    onlyUpdate = false
+    reset = false
+    clearCache = false
+    quiet = false
+    ignoreUnfixed = false
+    refresh = false
+    autoRefresh = true
+    debug = true
+
+    [slack]
+    hookURL     = ""
+    token	= ""
+    channel     = ""
+    authUser    = ""
+    notifyUsers = [""]
