@@ -33,18 +33,28 @@ func Init(conf config.SlackConf) {
 	Conf = conf
 }
 
+type message struct {
+	Text        string             `json:"text"`
+	Username    string             `json:"username"`
+	IconEmoji   string             `json:"icon_emoji"`
+	Channel     string             `json:"channel"`
+	Attachments []slack.Attachment `json:"attachments"`
+}
+
 func (w SlackWriter) NotificationResource(kind, name, namespace string) (err error) {
 	api := slack.New(Conf.Token)
 
 	str := fmt.Sprintf(`*%s: %s (%s)*`, kind, name, namespace)
 
-	_, _, err = api.PostMessage(
-		Conf.Channel,
-		slack.MsgOptionText(str, true),
-	)
-	if err != nil {
-		fmt.Printf("%s\n", err)
-		return err
+	if len(Conf.Token) > 0 {
+		_, _, err = api.PostMessage(
+			Conf.Channel,
+			slack.MsgOptionText(str, true),
+		)
+		if err != nil {
+			fmt.Printf("%s\n", err)
+			return err
+		}
 	}
 	return nil
 }
@@ -64,17 +74,23 @@ func (w SlackWriter) NotificationAddOrModifyContainer(rs report.Results) (err er
 		}
 		str := fmt.Sprintf("> %s\n> Total: %d (%s)\n\n", r.FileName, len(r.Vulnerabilities), strings.Join(results, ", "))
 
-		_, _, err := api.PostMessage(
-			Conf.Channel,
-			slack.MsgOptionText(str, true),
-			slack.MsgOptionAttachments(toSlackAttachments(r.Vulnerabilities)...),
-		)
-		if err != nil {
-			fmt.Printf("%s\n", err)
-			return err
+		if len(Conf.Token) > 0 {
+			_, _, err := api.PostMessage(
+				Conf.Channel,
+				slack.MsgOptionText(str, true),
+				slack.MsgOptionAttachments(toSlackAttachments(r.Vulnerabilities)...),
+			)
+			if err != nil {
+				fmt.Printf("%s\n", err)
+				return err
+			}
 		}
 	}
 	return nil
+}
+
+//TODO: Support hookURL
+func send(msg message) {
 }
 
 func toSlackAttachments(vs []vulnerability.DetectedVulnerability) (attaches []slack.Attachment) {
