@@ -10,6 +10,5 @@ FROM alpine:3.9
 RUN apk --no-cache add ca-certificates git
 COPY --from=builder /kube-trivy /usr/local/bin/kube-trivy
 RUN chmod +x /usr/local/bin/kube-trivy
-ADD config.toml /usr/local/bin/config.toml
 
 ENTRYPOINT ["kube-trivy"]
