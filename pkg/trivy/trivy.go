@@ -12,6 +12,7 @@ import (
 	"github.com/knqyf263/trivy/pkg/log"
 	"github.com/knqyf263/trivy/pkg/report"
 	"github.com/knqyf263/trivy/pkg/scanner"
+	"github.com/knqyf263/trivy/pkg/types"
 	"github.com/knqyf263/trivy/pkg/utils"
 	"github.com/knqyf263/trivy/pkg/vulnsrc"
 	"github.com/knqyf263/trivy/pkg/vulnsrc/vulnerability"
@@ -64,14 +65,16 @@ func Update() error {
 	if Conf.SkipUpdate {
 		return nil
 	}
-	if err := vulnsrc.Update(); err != nil {
+	updateTargets := vulnsrc.UpdateList
+	if err := vulnsrc.Update(updateTargets); err != nil {
 		l.Fatalf("error in vulnerability DB update: %w", err)
 	}
 	return nil
 }
 
 func ScanImage(imageName string) (*report.Results, error) {
-	vulns, err := scanner.ScanImage(imageName, "")
+	scanOptions := types.ScanOptions{VulnType: strings.Split("os,library", ",")}
+	vulns, err := scanner.ScanImage(imageName, "", scanOptions)
 
 	var results report.Results
 	var severities []vulnerability.Severity

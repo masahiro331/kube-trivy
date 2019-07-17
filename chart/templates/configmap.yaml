@@ -17,15 +17,15 @@ data:
     [Trivy]
     format = "table"
     serverity = "UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL"
-    cacheDir = "cache-dir"
+    cacheDir = "/cache/kube-trivy/cache-dir"
     exitCode = 0
-    skipUpdate = true
+    skipUpdate = false
     onlyUpdate = false
     reset = false
     clearCache = false
     quiet = false
     ignoreUnfixed = false
-    refresh = false
+    refresh = true
     autoRefresh = true
     debug = true
 
