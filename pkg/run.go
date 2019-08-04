@@ -45,10 +45,6 @@ func Run(c *cli.Context) error {
 	}
 	utils.Quiet = c.Bool("quiet")
 
-	if err := dbUpdate(c); err != nil {
-		return xerrors.Errorf("error in dbUpdate: %w", err)
-	}
-
 	if noTarget {
 		return nil
 	}
@@ -78,6 +74,10 @@ func Run(c *cli.Context) error {
 	}
 	switch args[0] {
 	case "scan":
+		if err := dbUpdate(c); err != nil {
+			return xerrors.Errorf("error in dbUpdate: %w", err)
+		}
+
 		vulnType = c.String("vuln-type")
 		var resultsMap map[string]report.Results = map[string]report.Results{}
 		// resourcesName: e.g. deployment
@@ -98,9 +98,31 @@ func Run(c *cli.Context) error {
 		}
 
 		return nil
+	case "list":
+		res, err := client.ListVulnerability()
+		if err != nil {
+			return xerrors.Errorf("failed to get vulnerability: %v", err)
+		}
+		body := ""
+		for _, vuln := range res.Items {
+			body += fmt.Sprintf("%-64s %-7d %-7d %-7d %-7d %-7d\n", vuln.Name,
+				vuln.Spec.Statistics["CRITICAL"],
+				vuln.Spec.Statistics["HIGH"],
+				vuln.Spec.Statistics["MIDIUM"],
+				vuln.Spec.Statistics["LOW"],
+				vuln.Spec.Statistics["UNKNOWN"],
+			)
+		}
+		header := fmt.Sprintf("%-64.64s %-7.7s %-7.7s %-7.7s %-7.7s %-7.7s\n", "NAME", "CRITICAL", "HIGH", "MIDIUM", "LOW", "UNKNOWN")
+		if len(body) == 0 {
+			header = "No vulnerability found.\n"
+		}
+		fmt.Print(header + body)
+		return nil
+
 	case "get":
 		if len(args) < 2 {
-			return xerrors.Errorf("failed to get commad need target: %v", err)
+			return xerrors.New("failed to get commad need target")
 		}
 		res, err := client.GetVulnerability(args[1])
 		if err != nil {
