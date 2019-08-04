@@ -2,7 +2,6 @@ package pkg
 
 import (
 	"fmt"
-	l "log"
 	"os"
 	"strings"
 
@@ -36,9 +35,15 @@ var (
 )
 
 func Run(c *cli.Context) error {
+	args := c.Args()
+	if len(args) == 0 {
+		cli.ShowAppHelpAndExit(c, 1)
+	}
+
 	if err := log.InitLogger(c.Bool("debug")); err != nil {
 		return xerrors.Errorf("error in init logger", err)
 	}
+	utils.Quiet = c.Bool("quiet")
 
 	if err := dbUpdate(c); err != nil {
 		return xerrors.Errorf("error in dbUpdate: %w", err)
@@ -51,7 +56,7 @@ func Run(c *cli.Context) error {
 	client := kubetrivy.NewKubeTrivy(c.String("namespace"))
 	imageMap, err := client.GetImages()
 	if err != nil {
-		return xerrors.Errorf("error in get images in kubernetes: %w", err)
+		return xerrors.Errorf("error in get images in kubernetes: %v", err)
 	}
 
 	ignoreUnfixed = c.Bool("ignore-unfixed")
@@ -59,7 +64,7 @@ func Run(c *cli.Context) error {
 	for _, s := range strings.Split(severityfilter, ",") {
 		severity, err := vulnerability.NewSeverity(s)
 		if err != nil {
-			return xerrors.Errorf("error in severity option: %w", err)
+			return xerrors.Errorf("error in severity option: %v", err)
 		}
 		severities = append(severities, severity)
 	}
@@ -68,12 +73,8 @@ func Run(c *cli.Context) error {
 	output := os.Stdout
 	if o != "" {
 		if output, err = os.Create(o); err != nil {
-			return xerrors.Errorf("failed to create an output file: %w", err)
+			return xerrors.Errorf("failed to create an output file: %v", err)
 		}
-	}
-	args := c.Args()
-	if len(args) == 0 {
-		return xerrors.Errorf("need some arguments", err)
 	}
 	switch args[0] {
 	case "scan":
@@ -99,11 +100,11 @@ func Run(c *cli.Context) error {
 		return nil
 	case "get":
 		if len(args) < 2 {
-			return xerrors.Errorf("failed to get commad need target", err)
+			return xerrors.Errorf("failed to get commad need target: %v", err)
 		}
 		res, err := client.GetVulnerability(args[1])
 		if err != nil {
-			return xerrors.Errorf("failed to get vulnerability", err)
+			return xerrors.Errorf("failed to get vulnerability: %v", err)
 		}
 
 		var results report.Results
@@ -131,9 +132,8 @@ func Run(c *cli.Context) error {
 		}
 
 		if err = writer.Write(results); err != nil {
-			return xerrors.Errorf("failed to write results: %w", err)
+			return xerrors.Errorf("failed to write results: %v", err)
 		}
-
 	}
 
 	return nil
@@ -173,12 +173,6 @@ func Scan(imageName string) (results report.Results, err error) {
 
 func dbUpdate(c *cli.Context) error {
 	cliVersion := c.App.Version
-
-	utils.Quiet = c.Bool("quiet")
-	debug := c.Bool("debug")
-	if err := log.InitLogger(debug); err != nil {
-		l.Fatal(err)
-	}
 
 	cacheDir := c.String("cache-dir")
 	if cacheDir != "" {
