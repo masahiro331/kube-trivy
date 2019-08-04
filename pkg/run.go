@@ -23,6 +23,7 @@ import (
 	"github.com/knqyf263/kube-trivy/pkg/kubetrivy"
 )
 
+var severities []vulnerability.Severity
 var (
 	noTarget       = false
 	clearCache     = false
@@ -53,13 +54,17 @@ func Run(c *cli.Context) error {
 		return xerrors.Errorf("error in get images in kubernetes: %w", err)
 	}
 
-	o = c.String("output")
-	severityfilter = c.String("severity")
-	vulnType = c.String("vuln-type")
 	ignoreUnfixed = c.Bool("ignore-unfixed")
-	format = c.String("format")
-	exitCode = c.Int("exit-code")
+	severityfilter = c.String("severity")
+	for _, s := range strings.Split(severityfilter, ",") {
+		severity, err := vulnerability.NewSeverity(s)
+		if err != nil {
+			return xerrors.Errorf("error in severity option: %w", err)
+		}
+		severities = append(severities, severity)
+	}
 
+	o = c.String("output")
 	output := os.Stdout
 	if o != "" {
 		if output, err = os.Create(o); err != nil {
@@ -72,6 +77,7 @@ func Run(c *cli.Context) error {
 	}
 	switch args[0] {
 	case "scan":
+		vulnType = c.String("vuln-type")
 		// resourcesName: e.g. deployment
 		for resourcesName, resources := range imageMap {
 			// name: metadata.name
@@ -101,13 +107,15 @@ func Run(c *cli.Context) error {
 
 		var results report.Results
 		for _, target := range res.Spec.Targets {
+			vulns := make([]vulnerability.DetectedVulnerability, len(target.Vulnerabilities))
+			for i, vuln := range target.Vulnerabilities {
+				vulns[i] = vulnerability.DetectedVulnerability(vuln)
+			}
 			result := report.Result{
 				FileName:        target.Name,
-				Vulnerabilities: make([]vulnerability.DetectedVulnerability, len(target.Vulnerabilities)),
+				Vulnerabilities: vulnerability.FillAndFilter(vulns, severities, ignoreUnfixed),
 			}
-			for i, vuln := range target.Vulnerabilities {
-				result.Vulnerabilities[i] = vulnerability.DetectedVulnerability(vuln)
-			}
+
 			results = append(results, result)
 		}
 
@@ -131,15 +139,6 @@ func Run(c *cli.Context) error {
 }
 
 func Scan(imageName string) (reports report.Results, err error) {
-	var severities []vulnerability.Severity
-	for _, s := range strings.Split(severityfilter, ",") {
-		severity, err := vulnerability.NewSeverity(s)
-		if err != nil {
-			return nil, xerrors.Errorf("error in severity option: %w", err)
-		}
-		severities = append(severities, severity)
-	}
-
 	// Check whether 'latest' tag is used
 	if imageName != "" {
 		image, err := registry.ParseImage(imageName)
