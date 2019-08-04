@@ -19,7 +19,8 @@ type DeploymentVulnerability struct {
 
 // DeploymentVulnerabilitySpec is the spec for a DeploymentVulnerability resource
 type DeploymentVulnerabilitySpec struct {
-	Targets []Target `json:"targets"`
+	Targets    []Target       `json:"targets"`
+	Statistics map[string]int `json:"statistics"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

@@ -51,7 +51,6 @@ func Run(c *cli.Context) error {
 	if err != nil {
 		return xerrors.Errorf("error in get images in kubernetes: %w", err)
 	}
-	fmt.Printf("%+v\n", imageMap)
 
 	o = c.String("output")
 	severityfilter = c.String("severity")
@@ -60,7 +59,7 @@ func Run(c *cli.Context) error {
 	format = c.String("format")
 	exitCode = c.Int("exit-code")
 	// resourcesName: e.g. deployment
-	for _, resources := range imageMap {
+	for resourcesName, resources := range imageMap {
 		// name: metadata.name
 		for name, resource := range resources {
 			for _, imageName := range resource {
@@ -68,7 +67,7 @@ func Run(c *cli.Context) error {
 				if err != nil {
 					log.Logger.Warn(err)
 				}
-				if err := client.CreateVulnerability(name, results); err != nil {
+				if err := client.CreateVulnerability(fmt.Sprintf("%s-%s-%s", resourcesName, name, imageName), results); err != nil {
 					log.Logger.Warn(err)
 				}
 

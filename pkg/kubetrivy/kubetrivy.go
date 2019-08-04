@@ -3,6 +3,7 @@ package kubetrivy
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/knqyf263/kube-trivy/pkg/config"
 	"github.com/knqyf263/trivy/pkg/report"
@@ -69,10 +70,20 @@ func (kt KubeTrivy) GetVulnerability() error {
 
 func (kt KubeTrivy) CreateVulnerability(name string, results report.Results) error {
 	var targets []kubetrivyv1.Target
+	severityCount := map[string]int{
+		"UNKNOWN":  0,
+		"LOW":      0,
+		"MEDIUM":   0,
+		"HIGH":     0,
+		"CRITICAL": 0,
+	}
 	for _, result := range results {
 		target := kubetrivyv1.Target{
 			Name:            result.FileName,
 			Vulnerabilities: make([]kubetrivyv1.Vulnerability, len(result.Vulnerabilities)),
+		}
+		for _, v := range result.Vulnerabilities {
+			severityCount[v.Severity]++
 		}
 		for i, vuln := range result.Vulnerabilities {
 			target.Vulnerabilities[i].VulnerabilityID = vuln.VulnerabilityID
@@ -86,16 +97,19 @@ func (kt KubeTrivy) CreateVulnerability(name string, results report.Results) err
 		}
 		targets = append(targets, target)
 	}
+
+	rep := strings.NewReplacer(":", "-", "/", "-")
 	deploymentVulnerability := kubetrivyv1.DeploymentVulnerability{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
+			Name:      rep.Replace(name),
 			Namespace: kt.Namespace,
 		},
-		Spec: kubetrivyv1.DeploymentVulnerabilitySpec{Targets: targets},
+		Spec: kubetrivyv1.DeploymentVulnerabilitySpec{
+			Targets:    targets,
+			Statistics: severityCount,
+		},
 	}
-	res, err := kt.KubeTrivy.KubetrivyV1().DeploymentVulnerabilities(kt.Namespace).Create(&deploymentVulnerability)
-	fmt.Printf("%+v\n", res)
-	fmt.Printf("%+v\n", err)
+	_, err := kt.KubeTrivy.KubetrivyV1().DeploymentVulnerabilities(kt.Namespace).Create(&deploymentVulnerability)
 	if err != nil {
 		return err
 	}

@@ -94,6 +94,13 @@ func (in *DeploymentVulnerabilitySpec) DeepCopyInto(out *DeploymentVulnerability
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
+	if in.Statistics != nil {
+		in, out := &in.Statistics, &out.Statistics
+		*out = make(map[string]int, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	return
 }
 
