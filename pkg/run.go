@@ -78,6 +78,7 @@ func Run(c *cli.Context) error {
 	switch args[0] {
 	case "scan":
 		vulnType = c.String("vuln-type")
+		var resultsMap map[string]report.Results = map[string]report.Results{}
 		// resourcesName: e.g. deployment
 		for resourcesName, resources := range imageMap {
 			// name: metadata.name
@@ -87,12 +88,12 @@ func Run(c *cli.Context) error {
 					if err != nil {
 						log.Logger.Warn(err)
 					}
-					if err := client.CreateVulnerability(fmt.Sprintf("%s-%s-%s", resourcesName, name, imageName), results); err != nil {
-						log.Logger.Warn(err)
-					}
-
+					resultsMap[fmt.Sprintf("%s-%s-%s", resourcesName, name, imageName)] = results
 				}
 			}
+		}
+		if err := client.SyncVulnerability(resultsMap); err != nil {
+			log.Logger.Warn(err)
 		}
 
 		return nil
@@ -138,7 +139,7 @@ func Run(c *cli.Context) error {
 	return nil
 }
 
-func Scan(imageName string) (reports report.Results, err error) {
+func Scan(imageName string) (results report.Results, err error) {
 	// Check whether 'latest' tag is used
 	if imageName != "" {
 		image, err := registry.ParseImage(imageName)
@@ -160,13 +161,13 @@ func Scan(imageName string) (reports report.Results, err error) {
 	}
 
 	for path, vuln := range vulns {
-		reports = append(reports, report.Result{
+		results = append(results, report.Result{
 			FileName:        path,
 			Vulnerabilities: vulnerability.FillAndFilter(vuln, severities, ignoreUnfixed),
 		})
 	}
 
-	return reports, nil
+	return results, nil
 
 }
 
