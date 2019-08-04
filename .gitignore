@@ -12,3 +12,5 @@
 *.out
 **tags
 code-generator
+vendor/
+kubetrivy
