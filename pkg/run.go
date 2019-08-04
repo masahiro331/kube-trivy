@@ -6,20 +6,21 @@ import (
 	"os"
 	"strings"
 
-	"github.com/genuinetools/reg/registry"
-	"github.com/knqyf263/fanal/cache"
+	"github.com/knqyf263/trivy/pkg/db"
 	"github.com/knqyf263/trivy/pkg/log"
 	"github.com/knqyf263/trivy/pkg/report"
 	"github.com/knqyf263/trivy/pkg/scanner"
 	"github.com/knqyf263/trivy/pkg/types"
 	"github.com/knqyf263/trivy/pkg/utils"
+	"github.com/knqyf263/trivy/pkg/vulnsrc"
 	"github.com/knqyf263/trivy/pkg/vulnsrc/vulnerability"
+
+	"github.com/genuinetools/reg/registry"
+	"github.com/knqyf263/fanal/cache"
 	"github.com/urfave/cli"
+	"golang.org/x/xerrors"
 
 	"github.com/knqyf263/kube-trivy/pkg/kubetrivy"
-	"github.com/knqyf263/trivy/pkg/db"
-	"github.com/knqyf263/trivy/pkg/vulnsrc"
-	"golang.org/x/xerrors"
 )
 
 var (
@@ -58,38 +59,78 @@ func Run(c *cli.Context) error {
 	ignoreUnfixed = c.Bool("ignore-unfixed")
 	format = c.String("format")
 	exitCode = c.Int("exit-code")
-	// resourcesName: e.g. deployment
-	for resourcesName, resources := range imageMap {
-		// name: metadata.name
-		for name, resource := range resources {
-			for _, imageName := range resource {
-				results, err := scan(imageName)
-				if err != nil {
-					log.Logger.Warn(err)
-				}
-				if err := client.CreateVulnerability(fmt.Sprintf("%s-%s-%s", resourcesName, name, imageName), results); err != nil {
-					log.Logger.Warn(err)
-				}
 
-			}
+	output := os.Stdout
+	if o != "" {
+		if output, err = os.Create(o); err != nil {
+			return xerrors.Errorf("failed to create an output file: %w", err)
 		}
 	}
+	args := c.Args()
+	if len(args) == 0 {
+		return xerrors.Errorf("need some arguments", err)
+	}
+	switch args[0] {
+	case "scan":
+		// resourcesName: e.g. deployment
+		for resourcesName, resources := range imageMap {
+			// name: metadata.name
+			for name, resource := range resources {
+				for _, imageName := range resource {
+					results, err := Scan(imageName)
+					if err != nil {
+						log.Logger.Warn(err)
+					}
+					if err := client.CreateVulnerability(fmt.Sprintf("%s-%s-%s", resourcesName, name, imageName), results); err != nil {
+						log.Logger.Warn(err)
+					}
 
-	if err := client.GetVulnerability(); err != nil {
-		return xerrors.Errorf("failed to get vulnerability", err)
+				}
+			}
+		}
+
+		return nil
+	case "get":
+		if len(args) < 2 {
+			return xerrors.Errorf("failed to get commad need target", err)
+		}
+		res, err := client.GetVulnerability(args[1])
+		if err != nil {
+			return xerrors.Errorf("failed to get vulnerability", err)
+		}
+
+		var results report.Results
+		for _, target := range res.Spec.Targets {
+			result := report.Result{
+				FileName:        target.Name,
+				Vulnerabilities: make([]vulnerability.DetectedVulnerability, len(target.Vulnerabilities)),
+			}
+			for i, vuln := range target.Vulnerabilities {
+				result.Vulnerabilities[i] = vulnerability.DetectedVulnerability(vuln)
+			}
+			results = append(results, result)
+		}
+
+		var writer report.Writer
+		switch format := c.String("format"); format {
+		case "table":
+			writer = &report.TableWriter{Output: output}
+		case "json":
+			writer = &report.JsonWriter{Output: output}
+		default:
+			return xerrors.Errorf("unknown format: %v", format)
+		}
+
+		if err = writer.Write(results); err != nil {
+			return xerrors.Errorf("failed to write results: %w", err)
+		}
+
 	}
 
 	return nil
 }
 
-func scan(imageName string) (reports report.Results, err error) {
-	output := os.Stdout
-	if o != "" {
-		if output, err = os.Create(o); err != nil {
-			return nil, xerrors.Errorf("failed to create an output file: %w", err)
-		}
-	}
-
+func Scan(imageName string) (reports report.Results, err error) {
 	var severities []vulnerability.Severity
 	for _, s := range strings.Split(severityfilter, ",") {
 		severity, err := vulnerability.NewSeverity(s)
@@ -126,27 +167,6 @@ func scan(imageName string) (reports report.Results, err error) {
 		})
 	}
 
-	var writer report.Writer
-	switch format {
-	case "table":
-		writer = &report.TableWriter{Output: output}
-	case "json":
-		writer = &report.JsonWriter{Output: output}
-	default:
-		return nil, xerrors.Errorf("unknown format: %v", format)
-	}
-
-	if err = writer.Write(reports); err != nil {
-		return nil, xerrors.Errorf("failed to write reports: %w", err)
-	}
-
-	if exitCode != 0 {
-		for _, report := range reports {
-			if len(report.Vulnerabilities) > 0 {
-				os.Exit(exitCode)
-			}
-		}
-	}
 	return reports, nil
 
 }

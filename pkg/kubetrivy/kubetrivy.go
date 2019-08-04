@@ -11,6 +11,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 
 	kubetrivyv1 "github.com/knqyf263/kube-trivy/pkg/apis/kubetrivy/v1"
+	v1 "github.com/knqyf263/kube-trivy/pkg/apis/kubetrivy/v1"
 	kubetrivy "github.com/knqyf263/kube-trivy/pkg/client/clientset/versioned"
 )
 
@@ -56,13 +57,15 @@ func NewKubeTrivy(namespace string) *KubeTrivy {
 	}
 }
 
-func (kt KubeTrivy) GetVulnerability() error {
-	_, err := kt.KubeTrivy.KubetrivyV1().Vulnerabilities(kt.Namespace).List(
-		metav1.ListOptions{})
+func (kt KubeTrivy) GetVulnerability(target string) (*v1.Vulnerability, error) {
+	vulnerabilities, err := kt.KubeTrivy.KubetrivyV1().Vulnerabilities(kt.Namespace).Get(
+		target,
+		metav1.GetOptions{})
 	if err != nil {
-		return errors.Wrap(err, "failed to list deployments")
+		return nil, errors.Wrap(err, "failed to get  vulnerability")
 	}
-	return nil
+
+	return vulnerabilities, nil
 
 }
 
@@ -85,14 +88,7 @@ func (kt KubeTrivy) CreateVulnerability(name string, results report.Results) err
 			severityCount[v.Severity]++
 		}
 		for i, vuln := range result.Vulnerabilities {
-			target.Vulnerabilities[i].VulnerabilityID = vuln.VulnerabilityID
-			target.Vulnerabilities[i].PkgName = vuln.PkgName
-			target.Vulnerabilities[i].InstalledVersion = vuln.InstalledVersion
-			target.Vulnerabilities[i].FixedVersion = vuln.FixedVersion
-			target.Vulnerabilities[i].Title = vuln.Title
-			target.Vulnerabilities[i].Description = vuln.Description
-			target.Vulnerabilities[i].Severity = vuln.Severity
-			target.Vulnerabilities[i].References = vuln.References
+			target.Vulnerabilities[i] = kubetrivyv1.DetectedVulnerability(vuln)
 		}
 		targets = append(targets, target)
 	}
