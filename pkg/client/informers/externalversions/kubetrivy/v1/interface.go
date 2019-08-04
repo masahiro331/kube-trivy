@@ -24,8 +24,8 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
-	// DeploymentVulnerabilities returns a DeploymentVulnerabilityInformer.
-	DeploymentVulnerabilities() DeploymentVulnerabilityInformer
+	// Vulnerabilities returns a VulnerabilityInformer.
+	Vulnerabilities() VulnerabilityInformer
 }
 
 type version struct {
@@ -39,7 +39,7 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
 }
 
-// DeploymentVulnerabilities returns a DeploymentVulnerabilityInformer.
-func (v *version) DeploymentVulnerabilities() DeploymentVulnerabilityInformer {
-	return &deploymentVulnerabilityInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+// Vulnerabilities returns a VulnerabilityInformer.
+func (v *version) Vulnerabilities() VulnerabilityInformer {
+	return &vulnerabilityInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

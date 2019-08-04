@@ -28,8 +28,8 @@ type FakeKubetrivyV1 struct {
 	*testing.Fake
 }
 
-func (c *FakeKubetrivyV1) DeploymentVulnerabilities(namespace string) v1.DeploymentVulnerabilityInterface {
-	return &FakeDeploymentVulnerabilities{c, namespace}
+func (c *FakeKubetrivyV1) Vulnerabilities(namespace string) v1.VulnerabilityInterface {
+	return &FakeVulnerabilities{c, namespace}
 }
 
 // RESTClient returns a RESTClient that is used to communicate

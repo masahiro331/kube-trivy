@@ -27,7 +27,7 @@ import (
 
 type KubetrivyV1Interface interface {
 	RESTClient() rest.Interface
-	DeploymentVulnerabilitiesGetter
+	VulnerabilitiesGetter
 }
 
 // KubetrivyV1Client is used to interact with features provided by the kubetrivy.io group.
@@ -35,8 +35,8 @@ type KubetrivyV1Client struct {
 	restClient rest.Interface
 }
 
-func (c *KubetrivyV1Client) DeploymentVulnerabilities(namespace string) DeploymentVulnerabilityInterface {
-	return newDeploymentVulnerabilities(c, namespace)
+func (c *KubetrivyV1Client) Vulnerabilities(namespace string) VulnerabilityInterface {
+	return newVulnerabilities(c, namespace)
 }
 
 // NewForConfig creates a new KubetrivyV1Client for the given config.

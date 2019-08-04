@@ -10,15 +10,15 @@ import (
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // DeploymentVulnerability resource
-type DeploymentVulnerability struct {
+type Vulnerability struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec DeploymentVulnerabilitySpec `json:"spec"`
+	Spec VulnerabilitySpec `json:"spec"`
 }
 
 // DeploymentVulnerabilitySpec is the spec for a DeploymentVulnerability resource
-type DeploymentVulnerabilitySpec struct {
+type VulnerabilitySpec struct {
 	Targets    []Target       `json:"targets"`
 	Statistics map[string]int `json:"statistics"`
 }
@@ -26,19 +26,19 @@ type DeploymentVulnerabilitySpec struct {
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // DeploymentVulnerabilityList is a list of DeploymentVulnerability resources
-type DeploymentVulnerabilityList struct {
+type VulnerabilityList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata"`
 
-	Items []DeploymentVulnerability `json:"items"`
+	Items []Vulnerability `json:"items"`
 }
 
 type Target struct {
-	Name            string          `json:"Target"`
-	Vulnerabilities []Vulnerability `json:"Vulnerabilities"`
+	Name            string                  `json:"Target"`
+	Vulnerabilities []DetectedVulnerability `json:"Vulnerabilities"`
 }
 
-type Vulnerability struct {
+type DetectedVulnerability struct {
 	VulnerabilityID  string   `json:"VulnerabilityID"`
 	PkgName          string   `json:"PkgName"`
 	InstalledVersion string   `json:"InstalledVersion"`
@@ -52,8 +52,8 @@ type Vulnerability struct {
 // Adds the list of known types to api.Scheme.
 func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
-		&DeploymentVulnerability{},
-		&DeploymentVulnerabilityList{},
+		&Vulnerability{},
+		&VulnerabilityList{},
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil

@@ -53,8 +53,8 @@ func (f *genericInformer) Lister() cache.GenericLister {
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
 	// Group=kubetrivy.io, Version=v1
-	case v1.SchemeGroupVersion.WithResource("deploymentvulnerabilities"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubetrivy().V1().DeploymentVulnerabilities().Informer()}, nil
+	case v1.SchemeGroupVersion.WithResource("vulnerabilities"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubetrivy().V1().Vulnerabilities().Informer()}, nil
 
 	}
 

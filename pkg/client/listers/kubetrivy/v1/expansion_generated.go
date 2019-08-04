@@ -18,10 +18,10 @@ limitations under the License.
 
 package v1
 
-// DeploymentVulnerabilityListerExpansion allows custom methods to be added to
-// DeploymentVulnerabilityLister.
-type DeploymentVulnerabilityListerExpansion interface{}
+// VulnerabilityListerExpansion allows custom methods to be added to
+// VulnerabilityLister.
+type VulnerabilityListerExpansion interface{}
 
-// DeploymentVulnerabilityNamespaceListerExpansion allows custom methods to be added to
-// DeploymentVulnerabilityNamespaceLister.
-type DeploymentVulnerabilityNamespaceListerExpansion interface{}
+// VulnerabilityNamespaceListerExpansion allows custom methods to be added to
+// VulnerabilityNamespaceLister.
+type VulnerabilityNamespaceListerExpansion interface{}
