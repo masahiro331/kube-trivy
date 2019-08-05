@@ -98,6 +98,7 @@ func Run(c *cli.Context) error {
 			return xerrors.Errorf("failed to create an output file: %v", err)
 		}
 	}
+
 	switch args[0] {
 	case "scan":
 		if err := dbUpdate(c); err != nil {

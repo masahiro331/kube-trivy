@@ -20,6 +20,7 @@ const (
 	Deployment  = "deployment"
 	DaemonSet   = "daemonset"
 	StatefulSet = "statefulset"
+	CRD         = "vulnerabilities.kubetrivy.io"
 )
 
 var (
@@ -27,9 +28,9 @@ var (
 )
 
 type KubeTrivy struct {
+	Namespace string
 	*kubernetes.Clientset
 	KubeTrivy *kubetrivy.Clientset
-	Namespace string
 }
 
 func NewKubeTrivy(namespace string) *KubeTrivy {
@@ -51,8 +52,8 @@ func NewKubeTrivy(namespace string) *KubeTrivy {
 	// metav1.NamespaceAll
 
 	return &KubeTrivy{
-		Clientset: clientset,
 		Namespace: namespace,
+		Clientset: clientset,
 		KubeTrivy: kubetrivyClientset,
 	}
 }
