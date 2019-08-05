@@ -36,7 +36,7 @@ OPTIONS:
 	app := cli.NewApp()
 	app.Name = "kubetrivy"
 	app.Version = version
-	app.ArgsUsage = "image_name"
+	app.ArgsUsage = "scan"
 
 	app.Usage = "A simple and comprehensive vulnerability scanner for kubernetes containers"
 

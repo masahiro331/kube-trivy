@@ -24,7 +24,6 @@ import (
 
 var severities []vulnerability.Severity
 var (
-	noTarget       = false
 	clearCache     = false
 	o              = ""
 	severityfilter = ""
@@ -32,12 +31,13 @@ var (
 	ignoreUnfixed  = false
 	format         = "table"
 	exitCode       = 0
+	noTarget       = false
 )
 
 func Run(c *cli.Context) error {
 	args := c.Args()
 	if len(args) == 0 {
-		cli.ShowAppHelpAndExit(c, 1)
+		noTarget = true
 	}
 
 	if err := log.InitLogger(c.Bool("debug")); err != nil {
@@ -45,6 +45,32 @@ func Run(c *cli.Context) error {
 	}
 	utils.Quiet = c.Bool("quiet")
 
+	cacheDir := c.String("cache-dir")
+	if cacheDir != "" {
+		utils.SetCacheDir(cacheDir)
+	}
+
+	log.Logger.Debugf("cache dir:  %s", utils.CacheDir())
+
+	reset := c.Bool("reset")
+	if reset {
+		log.Logger.Info("Resetting...")
+		if err := cache.Clear(); err != nil {
+			return xerrors.New("failed to remove image layer cache")
+		}
+		if err := os.RemoveAll(utils.CacheDir()); err != nil {
+			return xerrors.New("failed to remove cache")
+		}
+		return nil
+	}
+
+	clearCache = c.Bool("clear-cache")
+	if clearCache {
+		log.Logger.Info("Removing image caches...")
+		if err := cache.Clear(); err != nil {
+			return xerrors.New("failed to remove image layer cache")
+		}
+	}
 	if noTarget {
 		return nil
 	}
@@ -195,33 +221,6 @@ func Scan(imageName string) (results report.Results, err error) {
 
 func dbUpdate(c *cli.Context) error {
 	cliVersion := c.App.Version
-
-	cacheDir := c.String("cache-dir")
-	if cacheDir != "" {
-		utils.SetCacheDir(cacheDir)
-	}
-
-	log.Logger.Debugf("cache dir:  %s", utils.CacheDir())
-
-	reset := c.Bool("reset")
-	if reset {
-		log.Logger.Info("Resetting...")
-		if err := cache.Clear(); err != nil {
-			return xerrors.New("failed to remove image layer cache")
-		}
-		if err := os.RemoveAll(utils.CacheDir()); err != nil {
-			return xerrors.New("failed to remove cache")
-		}
-		return nil
-	}
-
-	clearCache = c.Bool("clear-cache")
-	if clearCache {
-		log.Logger.Info("Removing image caches...")
-		if err := cache.Clear(); err != nil {
-			return xerrors.New("failed to remove image layer cache")
-		}
-	}
 
 	refresh := c.Bool("refresh")
 	autoRefresh := c.Bool("auto-refresh")
