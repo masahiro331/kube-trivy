@@ -106,6 +106,10 @@ OPTIONS:
 			Name:  "quiet, q",
 			Usage: "suppress progress bar",
 		},
+		cli.BoolFlag{
+			Name:  "no-crd",
+			Usage: "have not created a custom resource in kubernetes",
+		},
 		cli.StringFlag{
 			Name:  "cache-dir",
 			Usage: "cache directory",
