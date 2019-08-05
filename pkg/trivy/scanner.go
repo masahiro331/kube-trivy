@@ -49,12 +49,12 @@ func scan(imageName string) (results report.Results, err error) {
 		if err != nil {
 			return nil, xerrors.Errorf("invalid image: %w", err)
 		}
-		if image.Tag == "latest" && !clearCache {
+		if image.Tag == "latest" && !config.ClearCache {
 			log.Logger.Warn("You should avoid using the :latest tag as it is cached. You need to specify '--clear-cache' option when :latest image is changed")
 		}
 	}
 
-	scanOptions := types.ScanOptions{VulnType: strings.Split(vulnType, ",")}
+	scanOptions := types.ScanOptions{VulnType: strings.Split(config.VulnType, ",")}
 
 	log.Logger.Debugf("Vulnerability type:  %s", scanOptions.VulnType)
 
@@ -66,7 +66,7 @@ func scan(imageName string) (results report.Results, err error) {
 	for path, vuln := range vulns {
 		results = append(results, report.Result{
 			FileName:        path,
-			Vulnerabilities: vulnerability.FillAndFilter(vuln, severities, ignoreUnfixed),
+			Vulnerabilities: vulnerability.FillAndFilter(vuln, severities, config.IgnoreUnfixed),
 		})
 	}
 

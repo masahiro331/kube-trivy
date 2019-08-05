@@ -10,15 +10,15 @@ import (
 )
 
 func InitDB() error {
-	if refresh || autoRefresh {
-		if skipUpdate {
+	if config.Refresh || config.AutoRefresh {
+		if config.SkipUpdate {
 			return xerrors.New("The --skip-update option can not be specified with the --refresh or --auto-refresh option")
 		}
-		if onlyUpdate != "" {
+		if config.OnlyUpdate != "" {
 			return xerrors.New("The --only-update option can not be specified with the --refresh or --auto-refresh option")
 		}
 	}
-	if skipUpdate && onlyUpdate != "" {
+	if config.SkipUpdate && config.OnlyUpdate != "" {
 		return xerrors.New("The --skip-update and --only-update option can not be specified both")
 	}
 
@@ -32,13 +32,13 @@ func UpdateDB(cliVersion string) error {
 	needRefresh := false
 	dbVersion := db.GetVersion()
 	if dbVersion != "" && dbVersion != cliVersion {
-		if !refresh && !autoRefresh {
+		if !config.Refresh && !config.AutoRefresh {
 			return xerrors.New("Detected version update of kubetrivy. Please try again with --refresh or --auto-refresh option")
 		}
 		needRefresh = true
 	}
 
-	if refresh || needRefresh {
+	if config.Refresh || needRefresh {
 		log.Logger.Info("Refreshing DB...")
 		if err := db.Reset(); err != nil {
 			return xerrors.Errorf("error in refresh DB: %w", err)
@@ -46,12 +46,12 @@ func UpdateDB(cliVersion string) error {
 	}
 
 	updateTargets := vulnsrc.UpdateList
-	if onlyUpdate != "" {
+	if config.OnlyUpdate != "" {
 		log.Logger.Warn("The --only-update option may cause the vulnerability details such as severity and title not to be displayed")
-		updateTargets = strings.Split(onlyUpdate, ",")
+		updateTargets = strings.Split(config.OnlyUpdate, ",")
 	}
 
-	if !skipUpdate {
+	if !config.SkipUpdate {
 		if err := vulnsrc.Update(updateTargets); err != nil {
 			return xerrors.Errorf("error in vulnerability DB update: %w", err)
 		}

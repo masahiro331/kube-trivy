@@ -11,20 +11,8 @@ import (
 	"golang.org/x/xerrors"
 )
 
-var (
-	clearCache     bool
-	severityFilter string
-	ignoreUnfixed  bool
-	output         string
-	vulnType       string
-	format         string
-	refresh        bool
-	autoRefresh    bool
-	skipUpdate     bool
-	onlyUpdate     string
-)
-
 var severities []vulnerability.Severity
+var config TrivyConf
 
 type TrivyConf struct {
 	ClearCache     bool
@@ -44,22 +32,17 @@ type TrivyConf struct {
 }
 
 func Init(conf *TrivyConf) error {
-	if err := log.InitLogger(conf.Debug); err != nil {
+	config = *conf
+	if err := log.InitLogger(config.Debug); err != nil {
 		return xerrors.Errorf("error in init logger", err)
 	}
-	severityFilter = conf.SeverityFilter
-	utils.Quiet = conf.Quiet
-	vulnType = conf.VulnType
-	cacheDir := conf.CacheDir
-	ignoreUnfixed = conf.IgnoreUnfixed
-	format = conf.Format
 	log.Logger.Debugf("cache dir:  %s", utils.CacheDir())
 
-	if conf.CacheDir != "" {
-		utils.SetCacheDir(cacheDir)
+	if config.CacheDir != "" {
+		utils.SetCacheDir(config.CacheDir)
 	}
 
-	reset := conf.Reset
+	reset := config.Reset
 	if reset {
 		log.Logger.Info("Resetting...")
 		if err := cache.Clear(); err != nil {
@@ -71,23 +54,22 @@ func Init(conf *TrivyConf) error {
 		return nil
 	}
 
-	clearCache = conf.ClearCache
-	if clearCache {
+	if config.ClearCache {
 		log.Logger.Info("Removing image caches...")
 		if err := cache.Clear(); err != nil {
 			return xerrors.New("failed to remove image layer cache")
 		}
 	}
 
-	if conf.NoTarget {
-		if !reset && !clearCache {
+	if config.NoTarget {
+		if !config.Reset && !config.ClearCache {
 			// cli.ShowAppHelpAndExit(c, 1)
 			return xerrors.New("please -h")
 		}
 		return nil
 	}
 
-	for _, s := range strings.Split(severityFilter, ",") {
+	for _, s := range strings.Split(config.SeverityFilter, ",") {
 		severity, err := vulnerability.NewSeverity(s)
 		if err != nil {
 			return xerrors.Errorf("error in severity option: %v", err)

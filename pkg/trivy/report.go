@@ -22,20 +22,20 @@ func Write(res *v1.Vulnerability) error {
 		}
 		result := report.Result{
 			FileName:        target.Name,
-			Vulnerabilities: vulnerability.FillAndFilter(vulns, severities, ignoreUnfixed),
+			Vulnerabilities: vulnerability.FillAndFilter(vulns, severities, config.IgnoreUnfixed),
 		}
 
 		results = append(results, result)
 	}
 
 	var writer report.Writer
-	switch format {
+	switch config.Format {
 	case "table":
 		writer = &report.TableWriter{Output: output}
 	case "json":
 		writer = &report.JsonWriter{Output: output}
 	default:
-		return xerrors.Errorf("unknown format: %v", format)
+		return xerrors.Errorf("unknown format: %v", config.Format)
 	}
 	if err := writer.Write(results); err != nil {
 		return xerrors.Errorf("failed to write results: %v", err)
