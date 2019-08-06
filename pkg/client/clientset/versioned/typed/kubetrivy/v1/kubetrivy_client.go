@@ -19,8 +19,8 @@ limitations under the License.
 package v1
 
 import (
-	v1 "github.com/knqyf263/kube-trivy/pkg/apis/kubetrivy/v1"
-	"github.com/knqyf263/kube-trivy/pkg/client/clientset/versioned/scheme"
+	v1 "github.com/masahiro331/kube-trivy/pkg/apis/kubetrivy/v1"
+	"github.com/masahiro331/kube-trivy/pkg/client/clientset/versioned/scheme"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	rest "k8s.io/client-go/rest"
 )

@@ -19,7 +19,7 @@ limitations under the License.
 package fake
 
 import (
-	v1 "github.com/knqyf263/kube-trivy/pkg/client/clientset/versioned/typed/kubetrivy/v1"
+	v1 "github.com/masahiro331/kube-trivy/pkg/client/clientset/versioned/typed/kubetrivy/v1"
 	rest "k8s.io/client-go/rest"
 	testing "k8s.io/client-go/testing"
 )

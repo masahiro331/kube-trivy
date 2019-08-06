@@ -4,15 +4,15 @@ import (
 	"log"
 	"strings"
 
-	"github.com/knqyf263/kube-trivy/pkg/config"
 	"github.com/knqyf263/trivy/pkg/report"
+	"github.com/masahiro331/kube-trivy/pkg/config"
 	"golang.org/x/xerrors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
-	kubetrivyv1 "github.com/knqyf263/kube-trivy/pkg/apis/kubetrivy/v1"
-	v1 "github.com/knqyf263/kube-trivy/pkg/apis/kubetrivy/v1"
-	kubetrivy "github.com/knqyf263/kube-trivy/pkg/client/clientset/versioned"
+	kubetrivyv1 "github.com/masahiro331/kube-trivy/pkg/apis/kubetrivy/v1"
+	v1 "github.com/masahiro331/kube-trivy/pkg/apis/kubetrivy/v1"
+	kubetrivy "github.com/masahiro331/kube-trivy/pkg/client/clientset/versioned"
 )
 
 // K8s resources

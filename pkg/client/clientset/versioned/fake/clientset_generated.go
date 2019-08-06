@@ -19,9 +19,9 @@ limitations under the License.
 package fake
 
 import (
-	clientset "github.com/knqyf263/kube-trivy/pkg/client/clientset/versioned"
-	kubetrivyv1 "github.com/knqyf263/kube-trivy/pkg/client/clientset/versioned/typed/kubetrivy/v1"
-	fakekubetrivyv1 "github.com/knqyf263/kube-trivy/pkg/client/clientset/versioned/typed/kubetrivy/v1/fake"
+	clientset "github.com/masahiro331/kube-trivy/pkg/client/clientset/versioned"
+	kubetrivyv1 "github.com/masahiro331/kube-trivy/pkg/client/clientset/versioned/typed/kubetrivy/v1"
+	fakekubetrivyv1 "github.com/masahiro331/kube-trivy/pkg/client/clientset/versioned/typed/kubetrivy/v1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"

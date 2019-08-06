@@ -23,9 +23,9 @@ import (
 	sync "sync"
 	time "time"
 
-	versioned "github.com/knqyf263/kube-trivy/pkg/client/clientset/versioned"
-	internalinterfaces "github.com/knqyf263/kube-trivy/pkg/client/informers/externalversions/internalinterfaces"
-	kubetrivy "github.com/knqyf263/kube-trivy/pkg/client/informers/externalversions/kubetrivy"
+	versioned "github.com/masahiro331/kube-trivy/pkg/client/clientset/versioned"
+	internalinterfaces "github.com/masahiro331/kube-trivy/pkg/client/informers/externalversions/internalinterfaces"
+	kubetrivy "github.com/masahiro331/kube-trivy/pkg/client/informers/externalversions/kubetrivy"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

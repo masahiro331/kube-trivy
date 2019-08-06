@@ -8,8 +8,8 @@ import (
 	"github.com/urfave/cli"
 	"golang.org/x/xerrors"
 
-	"github.com/knqyf263/kube-trivy/pkg/kubetrivy"
-	"github.com/knqyf263/kube-trivy/pkg/trivy"
+	"github.com/masahiro331/kube-trivy/pkg/kubetrivy"
+	"github.com/masahiro331/kube-trivy/pkg/trivy"
 )
 
 var (

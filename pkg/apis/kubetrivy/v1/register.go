@@ -4,7 +4,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	kubetrivy "github.com/knqyf263/kube-trivy/pkg/apis/kubetrivy"
+	kubetrivy "github.com/masahiro331/kube-trivy/pkg/apis/kubetrivy"
 )
 
 // SchemeGroupVersion is group version used to register these objects

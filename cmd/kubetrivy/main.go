@@ -10,7 +10,7 @@ import (
 
 	"github.com/urfave/cli"
 
-	"github.com/knqyf263/kube-trivy/pkg"
+	"github.com/masahiro331/kube-trivy/pkg"
 )
 
 var (

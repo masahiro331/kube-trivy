@@ -19,7 +19,7 @@ limitations under the License.
 package fake
 
 import (
-	kubetrivyv1 "github.com/knqyf263/kube-trivy/pkg/apis/kubetrivy/v1"
+	kubetrivyv1 "github.com/masahiro331/kube-trivy/pkg/apis/kubetrivy/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

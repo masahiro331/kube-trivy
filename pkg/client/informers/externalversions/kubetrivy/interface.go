@@ -19,8 +19,8 @@ limitations under the License.
 package kubetrivy
 
 import (
-	internalinterfaces "github.com/knqyf263/kube-trivy/pkg/client/informers/externalversions/internalinterfaces"
-	v1 "github.com/knqyf263/kube-trivy/pkg/client/informers/externalversions/kubetrivy/v1"
+	internalinterfaces "github.com/masahiro331/kube-trivy/pkg/client/informers/externalversions/internalinterfaces"
+	v1 "github.com/masahiro331/kube-trivy/pkg/client/informers/externalversions/kubetrivy/v1"
 )
 
 // Interface provides access to each of this group's versions.

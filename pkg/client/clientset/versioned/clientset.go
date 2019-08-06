@@ -21,7 +21,7 @@ package versioned
 import (
 	"fmt"
 
-	kubetrivyv1 "github.com/knqyf263/kube-trivy/pkg/client/clientset/versioned/typed/kubetrivy/v1"
+	kubetrivyv1 "github.com/masahiro331/kube-trivy/pkg/client/clientset/versioned/typed/kubetrivy/v1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"

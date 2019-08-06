@@ -19,7 +19,7 @@ limitations under the License.
 package v1
 
 import (
-	internalinterfaces "github.com/knqyf263/kube-trivy/pkg/client/informers/externalversions/internalinterfaces"
+	internalinterfaces "github.com/masahiro331/kube-trivy/pkg/client/informers/externalversions/internalinterfaces"
 )
 
 // Interface provides access to all the informers in this group version.

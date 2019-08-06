@@ -3,9 +3,9 @@ package trivy
 import (
 	"os"
 
-	v1 "github.com/knqyf263/kube-trivy/pkg/apis/kubetrivy/v1"
 	"github.com/knqyf263/trivy/pkg/report"
 	"github.com/knqyf263/trivy/pkg/vulnsrc/vulnerability"
+	v1 "github.com/masahiro331/kube-trivy/pkg/apis/kubetrivy/v1"
 	"golang.org/x/xerrors"
 )
 
