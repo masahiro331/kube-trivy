@@ -1,0 +1,57 @@
+project_name: kube-trivy
+builds:
+  - main: cmd/kubetrivy/main.go
+    binary: kubetrivy
+    ldflags:
+      - -s -w
+      - "-extldflags '-static'"
+      - -X main.version={{.Version}}
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+      - windows
+      - freebsd
+      - openbsd
+    goarch:
+      - amd64
+      - 386
+      - arm
+      - arm64
+    goarm:
+      - 7
+
+archive:
+  format: tar.gz
+  format_overrides:
+    - goos: windows
+      format: zip
+  name_template: "{{.ProjectName}}_{{.Version}}_{{.Os}}-{{.Arch}}"
+  replacements:
+    amd64: 64bit
+    386: 32bit
+    arm: ARM
+    arm64: ARM64
+    darwin: macOS
+    linux: Linux
+    windows: Windows
+    openbsd: OpenBSD
+    netbsd: NetBSD
+    freebsd: FreeBSD
+    dragonfly: DragonFlyBSD
+  files:
+    - README.md
+    - LICENSE
+
+brew:
+  github:
+    owner: masahiro331
+    name: homebrew-kube-trivy
+  dependencies:
+    - rpm
+  homepage: "https://github.com/masahiro331/kube-trivy"
+  description: ""
+  test: |
+    system "#{bin}/program --version"
+

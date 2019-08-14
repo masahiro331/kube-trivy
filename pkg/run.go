@@ -59,6 +59,7 @@ func Run(c *cli.Context) error {
 		log.Logger.Warn(err)
 		isInstalledCrd = false
 		if !c.Bool("no-crd") {
+			log.Logger.Info(isInstalledCrd)
 			return xerrors.New("kubetrivy requires CustomResourceDefinition or --no-crd option.")
 		}
 	}
