@@ -23,19 +23,64 @@ Check the about [Trivy](https://github.com/knqyf263/trivy)
   - kubetrivy is compatible with trivy's local DB.
   - kubetrivy is compatible with trivy's command options.
 
-# TODO:
-- Add kubectl plugin
+# Install Mac
+
+```
+$ brew tap masahiro331/kube-tirvy
+$ brew install kube-trivy
+$ kubetrivy -h
+```
 
 # Install
 
 ```
-$ git clone https://github.com/masahiro331/kube-trivy
-$ cd kube-trivy
-$ go build -o kubetrivy cmd/kubetrivy/main.go
-$ kubectl apply -f crd.yaml
+$ go get -u github.com/masahiro331/kube-trivy
+$ kubetrivy -h
 ```
 
 # Quick Start
+
+## Install CRD
+
+```
+$ cat << EOS > crd.yaml
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: vulnerabilities.kubetrivy.io
+spec:
+  group: kubetrivy.io
+  version: v1
+  names:
+    kind: Vulnerability
+    plural: vulnerabilities
+  scope: Namespaced
+  additionalPrinterColumns:
+  - name: UNKNOWN
+    type: integer
+    description: The total of vulnerabilities launched by the kubetrivy
+    JSONPath: .spec.statistics.UNKNOWN
+  - name: LOW
+    type: integer
+    description: The total of vulnerabilities launched by the kubetrivy
+    JSONPath: .spec.statistics.LOW
+  - name: MEDIUM
+    type: integer
+    description: The total of vulnerabilities launched by the kubetrivy
+    JSONPath: .spec.statistics.MEDIUM
+  - name: HIGH
+    type: integer
+    description: The total of vulnerabilities launched by the kubetrivy
+    JSONPath: .spec.statistics.HIGH
+  - name: CRITICAL
+    type: integer
+    description: The total of vulnerabilities launched by the kubetrivy
+    JSONPath: .spec.statistics.CRITICAL
+EOS
+
+$ kubectl apply -f crd.yaml
+$ kubectl get vulnerability
+```
 
 ## Basic
 
