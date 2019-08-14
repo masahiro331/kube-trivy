@@ -43,7 +43,7 @@ Check the about [Trivy](https://github.com/knqyf263/trivy)
 # Install
 
 ```
-$ git clone https://github.com/knqyf263/kube-trivy
+$ git clone https://github.com/masahiro331/kube-trivy
 $ cd kube-trivy
 $ go build -o kubetrivy cmd/kubetrivy/main.go
 $ kubectl apply -f crd.yaml
